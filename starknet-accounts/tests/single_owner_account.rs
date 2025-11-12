@@ -24,6 +24,7 @@ fn create_sequencer_client() -> SequencerGatewayProvider {
     SequencerGatewayProvider::starknet_alpha_sepolia()
 }
 
+//TODO: (#1)
 fn create_jsonrpc_client() -> JsonRpcClient<HttpTransport> {
     let rpc_url = std::env::var("STARKNET_RPC")
         .unwrap_or_else(|_| "https://pathfinder.rpc.sepolia.starknet.rs/rpc/v0_9".into());

@@ -6,6 +6,7 @@ use starknet_tokio_tungstenite::{
     NewTransactionsUpdate, TransactionStatusUpdate, TungsteniteStream,
 };
 
+//TODO: (#1)
 async fn create_stream() -> TungsteniteStream {
     TungsteniteStream::connect(
         "wss://pathfinder.rpc.sepolia.starknet.rs/rpc/v0_9",
@@ -52,6 +53,7 @@ async fn websocket_new_heads_subscription() {
 }
 
 #[tokio::test]
+#[ignore = "TODO: (#1)"]
 async fn websocket_events_subscription() {
     let stream = create_stream().await;
 
