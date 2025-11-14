@@ -1,6 +1,9 @@
 use serde::Deserialize;
 use serde_with::serde_as;
-use starknet_core::{serde::unsigned_field_element::UfeHex, types::Felt};
+use starknet_core::{
+    serde::unsigned_field_element::UfeHex,
+    types::{Felt, MigratedCompiledClassItem},
+};
 use std::collections::HashMap;
 
 use super::Block;
@@ -21,8 +24,8 @@ pub struct StateUpdate {
     pub block_hash: Option<Felt>,
     #[serde_as(as = "Option<UfeHex>")]
     pub new_root: Option<Felt>,
-    #[serde_as(as = "UfeHex")]
-    pub old_root: Felt,
+    #[serde_as(as = "Option<UfeHex>")]
+    pub old_root: Option<Felt>,
     pub state_diff: StateDiff,
 }
 
@@ -36,6 +39,7 @@ pub struct StateDiff {
     #[serde_as(as = "Vec<UfeHex>")]
     pub old_declared_contracts: Vec<Felt>,
     pub declared_classes: Vec<DeclaredContract>,
+    pub migrated_compiled_classes: Option<Vec<DeclaredContract>>,
     #[serde(default)]
     #[serde_as(as = "HashMap<UfeHex, UfeHex>")]
     pub nonces: HashMap<Felt, Felt>,
@@ -158,5 +162,55 @@ mod tests {
 
         let state_update: StateUpdate = serde_json::from_str(raw).unwrap();
         assert_eq!(state_update.state_diff.deployed_contracts.len(), 5);
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    fn test_state_diff_migrated_compiled_classes_none() {
+        let raw = include_str!(
+            "../../../test-data/raw_gateway_responses/get_state_update/7_with_deployed_contracts.txt"
+        );
+
+        let state_update: StateUpdate = serde_json::from_str(raw).unwrap();
+        assert!(state_update.state_diff.migrated_compiled_classes.is_none());
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    fn test_state_update_deser_with_migrated_compiled_classes() {
+        let raw = include_str!(
+            "../../../test-data/raw_gateway_responses/get_state_update/8_with_migrated_compiled_classes.txt"
+        );
+
+        let state_update: StateUpdate = serde_json::from_str(raw).unwrap();
+        assert!(state_update.state_diff.migrated_compiled_classes.is_some());
+        assert_eq!(
+            state_update
+                .state_diff
+                .migrated_compiled_classes
+                .as_ref()
+                .unwrap()
+                .len(),
+            2
+        );
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    fn test_state_update_conversion_pending_without_old_root() {
+        let raw = include_str!(
+            "../../../test-data/raw_gateway_responses/get_state_update/9_pending_without_old_root.txt"
+        );
+
+        let state_update: StateUpdate = serde_json::from_str(raw).unwrap();
+        let converted: starknet_core::types::MaybePreConfirmedStateUpdate =
+            state_update.try_into().unwrap();
+
+        match converted {
+            starknet_core::types::MaybePreConfirmedStateUpdate::PreConfirmedUpdate(update) => {
+                assert!(update.old_root.is_none());
+            }
+            _ => panic!("Expected PreConfirmedUpdate variant"),
+        }
     }
 }

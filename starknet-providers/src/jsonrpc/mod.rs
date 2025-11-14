@@ -15,9 +15,10 @@ use starknet_core::{
         MaybePreConfirmedBlockWithTxHashes, MaybePreConfirmedBlockWithTxs,
         MaybePreConfirmedStateUpdate, MessageFeeEstimate, MessageStatus, MsgFromL1,
         NoTraceAvailableErrorData, ResultPageRequest, SimulatedTransaction, SimulationFlag,
-        SimulationFlagForEstimateFee, StarknetError, StorageProof, SubscriptionId, SyncStatusType,
-        Transaction, TransactionExecutionErrorData, TransactionReceiptWithBlockInfo,
-        TransactionStatus, TransactionTrace, TransactionTraceWithHash,
+        SimulationFlagForEstimateFee, StarknetError, StorageKey, StorageProof, SubscriptionId,
+        SyncStatusType, Transaction, TransactionExecutionErrorData,
+        TransactionReceiptWithBlockInfo, TransactionStatus, TransactionTrace,
+        TransactionTraceWithHash,
     },
 };
 
@@ -629,12 +630,13 @@ where
         K: AsRef<FeltPrimitive> + Send + Sync,
         B: AsRef<BlockId> + Send + Sync,
     {
+        // TODO: (#9)
         Ok(self
             .send_request::<_, Felt>(
                 JsonRpcMethod::GetStorageAt,
                 GetStorageAtRequestRef {
                     contract_address: contract_address.as_ref(),
-                    key: key.as_ref(),
+                    key: &StorageKey(format!("{:#x}", key.as_ref())),
                     block_id: block_id.as_ref(),
                 },
             )
