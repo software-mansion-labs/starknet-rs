@@ -79,60 +79,28 @@ fn pack_256_le_to_felt(bytes: &[u8]) -> Felt {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_case::test_case;
 
     /// Adapted from `<https://github.com/starknet-io/types-rs/blob/734276638c8a6976ce69364acdbbb2b3c3463f07/crates/starknet-types-core/src/hash/blake2s.rs>`
-    #[test]
-    fn test_encode_felt252_data_and_calc_blake_hash() {
-        let test_cases = vec![
-            // Empty input
-            (
-                vec![],
-                "874258848688468311465623299960361657518391155660316941922502367727700287818",
-            ),
-            // Boundary: 2^63 - 1 (max positive i64)
-            (
-                vec![Felt::from((1u64 << 63) - 1)],
-                "94160078030592802631039216199460125121854007413180444742120780261703604445",
-            ),
-            // Boundary: 2^63 (min negative i64 if signed)
-            (
-                vec![Felt::from(1u64 << 63)],
-                "318549634615606806810268830802792194529205864650702991817600345489579978482",
-            ),
-            // Very large felt value from hex
-            (
-                vec![Felt::from_hex_unchecked(
-                    "800000000000011000000000000000000000000000000000000000000000000",
-                )],
-                "3505594194634492896230805823524239179921427575619914728883524629460058657521",
-            ),
-            // Mixed small and large felts
-            (
-                vec![Felt::from(42), Felt::from(1u64 << 63), Felt::from(1337)],
-                "1127477916086913892828040583976438888091205536601278656613505514972451246501",
-            ),
-            // Maximum 64-bit unsigned integer
-            (
-                vec![Felt::from(u64::MAX)],
-                "3515074221976790747383295076946184515593027667350620348239642126105984996390",
-            ),
-        ];
+    #[test_case(vec![] => "874258848688468311465623299960361657518391155660316941922502367727700287818"; "empty_input")]
+    #[test_case(vec![Felt::from((1u64 << 63) - 1)] => "94160078030592802631039216199460125121854007413180444742120780261703604445"; "max_i64")]
+    #[test_case(vec![Felt::from(1u64 << 63)] => "318549634615606806810268830802792194529205864650702991817600345489579978482"; "i64_sign_boundary")]
+    #[test_case(vec![Felt::from_hex_unchecked("800000000000011000000000000000000000000000000000000000000000000")] => "3505594194634492896230805823524239179921427575619914728883524629460058657521"; "large_hex")]
+    #[test_case(vec![Felt::from(42), Felt::from(1u64 << 63), Felt::from(1337)] => "1127477916086913892828040583976438888091205536601278656613505514972451246501"; "mixed_sizes")]
+    #[test_case(vec![Felt::from(u64::MAX)] => "3515074221976790747383295076946184515593027667350620348239642126105984996390"; "u64_max")]
+    fn test_encode_felt252_data_and_calc_blake_hash(input: Vec<Felt>) -> String {
+        let result_hash_many = blake2s_hash_many(&input);
 
-        for (input, expected_dec_str) in test_cases {
-            let expected = Felt::from_dec_str(expected_dec_str).unwrap();
-
-            // Compute using poseidon hash
-            let result_poseidon = blake2s_hash_many(&input);
-
-            // Compute using Blake2s hasher
-            let mut hasher = Blake2Hasher::new();
-            for &felt in &input {
-                hasher.update(felt);
-            }
-            let result_blake = hasher.finalize();
-
-            assert_eq!(result_poseidon, result_blake);
-            assert_eq!(result_poseidon, expected);
+        // Compute using Blake2s hasher
+        let mut hasher = Blake2Hasher::new();
+        for &felt in &input {
+            hasher.update(felt);
         }
+        let result_blake = hasher.finalize();
+
+        assert_eq!(result_hash_many, result_blake);
+
+        // Return string of the result for the `test_case` expected comparison.
+        result_hash_many.to_string()
     }
 }

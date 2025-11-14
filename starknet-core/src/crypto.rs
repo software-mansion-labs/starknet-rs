@@ -325,16 +325,19 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
-    fn test_hash_function_hash_methods() {
+    fn test_hash_function_hash() {
         let x = Felt::from_hex("0x1").unwrap();
         let y = Felt::from_hex("0x2").unwrap();
-        let many = vec![
-            Felt::from_hex("0x3").unwrap(),
-            Felt::from_hex("0x4").unwrap(),
-        ];
 
         assert_eq!(HashFunction::poseidon().hash(x, y), poseidon_hash(x, y));
         assert_eq!(HashFunction::blake2s().hash(x, y), blake2s_hash(x, y));
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    fn test_hash_function_hash_single() {
+        let x = Felt::from_hex("0x1").unwrap();
+
         assert_eq!(
             HashFunction::poseidon().hash_single(x),
             poseidon_hash_single(x)
@@ -343,6 +346,15 @@ mod tests {
             HashFunction::blake2s().hash_single(x),
             blake2s_hash_single(x)
         );
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    fn test_hash_function_hash_many() {
+        let many = vec![
+            Felt::from_hex("0x3").unwrap(),
+            Felt::from_hex("0x4").unwrap(),
+        ];
 
         assert_eq!(
             HashFunction::poseidon().hash_many(&many),
@@ -353,8 +365,14 @@ mod tests {
             HashFunction::blake2s().hash_many(&many),
             blake2s_hash_many(&many)
         );
+    }
 
-        // Test stateful hasher
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+    fn test_hash_function_stateful() {
+        let x = Felt::from_hex("0x1").unwrap();
+        let y = Felt::from_hex("0x2").unwrap();
+
         let mut poseidon_hasher = HashFunction::poseidon().stateful();
         poseidon_hasher.update(x);
         poseidon_hasher.update(y);

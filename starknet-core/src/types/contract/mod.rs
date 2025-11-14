@@ -1038,7 +1038,7 @@ mod tests {
     #[derive(serde::Deserialize)]
     struct ContractHashes {
         sierra_class_hash: String,
-        compiled_class_hash: String,
+        compiled_class_hash_poseidon: String,
         compiled_class_hash_blake2s: String,
     }
 
@@ -1185,14 +1185,14 @@ mod tests {
             ),
         ] {
             let compiled_class = serde_json::from_str::<CompiledClass>(raw_artifact).unwrap();
-            let computed_hash = compiled_class
+            let computed_hash_poseidon = compiled_class
                 .class_hash_with_hash_function(HashFunction::poseidon())
                 .unwrap();
 
             let hashes: ContractHashes = serde_json::from_str(raw_hashes).unwrap();
-            let expected_hash = Felt::from_hex(&hashes.compiled_class_hash).unwrap();
+            let expected_hash = Felt::from_hex(&hashes.compiled_class_hash_poseidon).unwrap();
 
-            assert_eq!(computed_hash, expected_hash);
+            assert_eq!(computed_hash_poseidon, expected_hash);
 
             let computed_hash_blake = compiled_class
                 .class_hash_with_hash_function(HashFunction::blake2s())
