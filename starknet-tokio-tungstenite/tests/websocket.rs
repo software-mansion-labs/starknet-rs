@@ -6,7 +6,7 @@ use starknet_tokio_tungstenite::{
     NewTransactionsUpdate, TransactionStatusUpdate, TungsteniteStream,
 };
 
-//TODO: (#1)
+// TODO: (#1)
 async fn create_stream() -> TungsteniteStream {
     TungsteniteStream::connect(
         "wss://pathfinder.rpc.sepolia.starknet.rs/rpc/v0_9",
