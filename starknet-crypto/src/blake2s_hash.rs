@@ -18,7 +18,7 @@ impl Blake2Hasher {
 
     /// Absorbs message into the hash.
     pub fn update(&mut self, msg: Felt) {
-        // 1) Unpack each Felt into 2 or 8 u32.
+        // 1) Encode msg into 2 or 8 u32.
         let u32_words = Blake2Felt252::encode_felts_to_u32s(&[msg]);
 
         // 2) Serialize the u32 limbs into a little-endian byte stream.

@@ -823,9 +823,7 @@ impl CompiledClass {
 /// Returns `None` if the version string is invalid.
 ///
 /// For versions >= 0.10.0, Blake2s is used. For older versions, Poseidon is used.
-pub fn hash_function_from_spec_version(version: &str) -> Option<HashFunction> {
-    let ver = Version::parse(version).ok()?;
-
+pub fn hash_function_from_spec_version(ver: &Version) -> Option<HashFunction> {
     // Compare only (major, minor, patch) tuple to ignore pre-release/build metadata.
     if (ver.major, ver.minor, ver.patch) >= (0, 10, 0) {
         Some(HashFunction::blake2s())
@@ -1208,25 +1206,28 @@ mod tests {
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
     fn test_hash_function_from_spec_version() {
-        let hash_fn_v09 = hash_function_from_spec_version("0.9.1").unwrap();
+        let version_09 = Version::parse("0.9.1").unwrap();
+        let hash_fn_v09 = hash_function_from_spec_version(&version_09).unwrap();
         assert_eq!(hash_fn_v09, HashFunction::poseidon());
 
-        let hash_fn_v10_rc = hash_function_from_spec_version("0.10.0-rc.1").unwrap();
+        let version_10_rc = Version::parse("0.10.0-rc.1").unwrap();
+        let hash_fn_v10_rc = hash_function_from_spec_version(&version_10_rc).unwrap();
         assert_eq!(hash_fn_v10_rc, HashFunction::blake2s());
 
-        let hash_fn_v10 = hash_function_from_spec_version("0.10.0").unwrap();
+        let version_10 = Version::parse("0.10.0").unwrap();
+        let hash_fn_v10 = hash_function_from_spec_version(&version_10).unwrap();
         assert_eq!(hash_fn_v10, HashFunction::blake2s());
 
-        let hash_fn_v11 = hash_function_from_spec_version("0.11.2").unwrap();
+        let version_11 = Version::parse("0.11.2").unwrap();
+        let hash_fn_v11 = hash_function_from_spec_version(&version_11).unwrap();
         assert_eq!(hash_fn_v11, HashFunction::blake2s());
 
-        let hash_fn_v10_rc = hash_function_from_spec_version("0.11.0-rc.1").unwrap();
+        let version_11_rc = Version::parse("0.11.0-rc.1").unwrap();
+        let hash_fn_v10_rc = hash_function_from_spec_version(&version_11_rc).unwrap();
         assert_eq!(hash_fn_v10_rc, HashFunction::blake2s());
 
-        let hash_fn_v1_0_rc = hash_function_from_spec_version("1.0.0-rc.3").unwrap();
+        let version_1_0_rc = Version::parse("1.0.0-rc.3").unwrap();
+        let hash_fn_v1_0_rc = hash_function_from_spec_version(&version_1_0_rc).unwrap();
         assert_eq!(hash_fn_v1_0_rc, HashFunction::blake2s());
-
-        let hash_fn_invalid = hash_function_from_spec_version("invalid.version");
-        assert!(hash_fn_invalid.is_none());
     }
 }
