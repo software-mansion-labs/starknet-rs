@@ -54,7 +54,6 @@ async fn can_deploy_contract_with_new_udc_not_unique() {
     .await;
 }
 
-// TODO: (#1)
 async fn can_deploy_contract_inner(account_address: Felt, udc: UdcSelector, unique: bool) {
     let rpc_url = std::env::var("STARKNET_RPC").unwrap();
     let provider = JsonRpcClient::new(HttpTransport::new(Url::parse(&rpc_url).unwrap()));

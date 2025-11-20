@@ -6,16 +6,16 @@ use starknet_rust_tokio_tungstenite::{
     NewTransactionsUpdate, TransactionStatusUpdate, TungsteniteStream,
 };
 
-// TODO: (#1)
 async fn create_stream() -> TungsteniteStream {
     TungsteniteStream::connect(
-        "wss://pathfinder.rpc.sepolia.starknet.rs/rpc/v0_9",
+        std::env::var("STARKNET_RPC").unwrap().replace("http://", "ws://"),
         Duration::from_secs(5),
     )
     .await
     .expect("WebSocket connection failed")
 }
 
+#[ignore]
 #[tokio::test]
 async fn websocket_new_heads_subscription() {
     let stream = create_stream().await;

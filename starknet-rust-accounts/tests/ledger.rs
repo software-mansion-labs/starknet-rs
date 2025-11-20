@@ -39,7 +39,6 @@ fn setup_app(port: u16) -> (Arc<SpeculosClient>, LedgerStarknetApp<SpeculosTrans
     (client, app)
 }
 
-// TODO: (#1)
 fn create_jsonrpc_client() -> JsonRpcClient<HttpTransport> {
     let rpc_url = std::env::var("STARKNET_RPC").unwrap();
     JsonRpcClient::new(HttpTransport::new(url::Url::parse(&rpc_url).unwrap()))
