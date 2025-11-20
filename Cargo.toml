@@ -1,5 +1,5 @@
 [package]
-name = "starknet"
+name = "starknet-rust"
 version = "0.17.0"
 authors = ["Jonathan LEI <me@xjonathan.dev>"]
 license = "MIT OR Apache-2.0"
