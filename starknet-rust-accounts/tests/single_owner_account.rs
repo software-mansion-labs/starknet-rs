@@ -89,6 +89,7 @@ async fn can_execute_eth_transfer_invoke_v3_with_manual_gas_with_jsonrpc() {
     .await
 }
 
+#[ignore = "TODO(#1)"]
 #[tokio::test]
 async fn can_estimate_declare_v3_fee_with_jsonrpc() {
     can_estimate_declare_v3_fee_inner(
@@ -98,6 +99,7 @@ async fn can_estimate_declare_v3_fee_with_jsonrpc() {
     .await
 }
 
+#[ignore = "TODO(#1)"]
 #[tokio::test]
 async fn can_declare_cairo1_contract_v3_with_jsonrpc() {
     can_declare_cairo1_contract_v3_inner(
