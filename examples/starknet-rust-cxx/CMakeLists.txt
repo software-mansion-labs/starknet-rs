@@ -14,7 +14,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Corrosion)
 
-add_subdirectory(starknet-cxx)
+add_subdirectory(starknet-rust-cxx)
 
 add_executable(main main.cpp)
-target_link_libraries(main PRIVATE starknet_cxx_bridge)
+target_link_libraries(main PRIVATE starknet_rust_cxx_bridge)

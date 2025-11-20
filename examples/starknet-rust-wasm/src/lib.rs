@@ -10,7 +10,7 @@ pub fn get_public_key(private_key_hex: &str) -> String {
     console_error_panic_hook::set_once();
 
     let private_key = Felt::from_hex(private_key_hex).unwrap();
-    let public_key = starknet_crypto::get_public_key(&private_key);
+    let public_key = starknet_rust_crypto::get_public_key(&private_key);
 
     format!("{public_key:#064x}")
 }

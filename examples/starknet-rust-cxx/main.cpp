@@ -1,4 +1,4 @@
-#include "starknet_cxx_bridge/lib.h"
+#include "starknet_rust_cxx_bridge/lib.h"
 #include <iostream>
 
 int main() {
