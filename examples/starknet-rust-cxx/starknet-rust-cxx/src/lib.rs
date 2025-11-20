@@ -29,7 +29,10 @@ pub fn pedersen_hash(x: &str, y: &str) -> String {
     let x = Felt::from_hex(x).unwrap();
     let y = Felt::from_hex(y).unwrap();
 
-    format!("{:#064x}", starknet_rust_core::crypto::pedersen_hash(&x, &y))
+    format!(
+        "{:#064x}",
+        starknet_rust_core::crypto::pedersen_hash(&x, &y)
+    )
 }
 
 fn ecdsa_sign(private_key: &str, message: &str) -> String {
