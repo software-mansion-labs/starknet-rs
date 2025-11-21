@@ -41,7 +41,7 @@ async fn jsonrpc_starknet_version() {
         .await
         .unwrap();
 
-    assert_eq!(version, "0.14.0");
+    assert_eq!(version, "0.14.1");
 }
 
 #[tokio::test]
