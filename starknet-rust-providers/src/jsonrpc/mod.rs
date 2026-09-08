@@ -1732,6 +1732,47 @@ mod tests {
         value.as_object().expect("object params")
     }
 
+    #[tokio::test]
+    async fn surfaces_whole_batch_rejection_error() {
+        use crate::{JsonRpcClient, Provider, ProviderRequestData, Url, jsonrpc::HttpTransport};
+        use starknet_rust_core::types::requests::SpecVersionRequest;
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        use tokio::net::TcpListener;
+
+        // A server that rejects a batch as a whole replies with a single JSON-RPC error
+        // object (per the spec), e.g. Pathfinder when a batch exceeds its 100-request cap.
+        let body = r#"{"jsonrpc":"2.0","id":null,"error":{"code":-32700,"message":"Parse error","data":{"reason":"array exceeds maximum length 100"}}}"#;
+
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            let mut buf = [0u8; 8192];
+            let _ = socket.read(&mut buf).await;
+            let response = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                body.len(),
+            );
+            let _ = socket.write_all(response.as_bytes()).await;
+        });
+
+        let url = Url::parse(&format!("http://{addr}/")).unwrap();
+        let client = JsonRpcClient::new(HttpTransport::new(url));
+
+        let err = client
+            .batch_requests(&[ProviderRequestData::SpecVersion(SpecVersionRequest)])
+            .await
+            .expect_err("a whole-batch rejection must surface as an error");
+
+        // Before the fix the server's message was replaced by a generic
+        // "expected a sequence" deserialization error; now it is surfaced.
+        let rendered = format!("{err:?}");
+        assert!(
+            rendered.contains("array exceeds maximum length"),
+            "server error was not surfaced: {rendered}"
+        );
+    }
+
     #[test]
     fn deserializes_error_response_with_null_id() {
         // A spec-compliant JSON-RPC error can carry `"id": null` (e.g. when the server

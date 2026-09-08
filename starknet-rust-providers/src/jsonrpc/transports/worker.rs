@@ -4,7 +4,7 @@ use url::Url;
 
 use crate::{
     ProviderRequestData,
-    jsonrpc::{JsonRpcMethod, JsonRpcResponse, transports::JsonRpcTransport},
+    jsonrpc::{JsonRpcError, JsonRpcMethod, JsonRpcResponse, transports::JsonRpcTransport},
 };
 
 /// A [`JsonRpcTransport`] implementation for the Cloudflare Workers environment.
@@ -29,6 +29,8 @@ pub enum WorkersTransportError {
     /// Response carried an invalid numeric id that can't be matched to a request.
     #[error("response has an invalid numeric id")]
     InvalidNumericResponseId,
+    /// The server rejected the batch as a whole and returned a single JSON-RPC error.
+    BatchError(JsonRpcError),
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -157,7 +159,20 @@ impl JsonRpcTransport for WorkersTransport {
         let response_body = response.text().await?;
 
         let parsed_response: Vec<JsonRpcResponse<serde_json::Value>> =
-            serde_json::from_str(&response_body).map_err(Self::Error::Json)?;
+            match serde_json::from_str(&response_body) {
+                Ok(parsed) => parsed,
+                Err(err) => {
+                    // A batch rejected as a whole is returned as a single JSON-RPC response
+                    // object (per JSON-RPC 2.0), not an array. Surface its error instead of
+                    // the opaque sequence type-mismatch.
+                    if let Ok(JsonRpcResponse::Error { error, .. }) =
+                        serde_json::from_str::<JsonRpcResponse<serde_json::Value>>(&response_body)
+                    {
+                        return Err(Self::Error::BatchError(error));
+                    }
+                    return Err(Self::Error::Json(err));
+                }
+            };
 
         let mut responses: Vec<Option<JsonRpcResponse<serde_json::Value>>> = vec![];
         responses.resize(request_bodies.len(), None);

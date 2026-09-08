@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Cairo 0 hinted class hash computation for pre-0.10 artifacts: `patch_legacy_cairo_type` is now idempotent (previously double-spaced strings already containing `" : "`), legacy spacing is applied to `references[*].value` entries, and `abi: null` is preserved through the hinted-hash payload ([#148]).
 - `NoTraceAvailableErrorData::status` is now of type `NoTraceAvailableStatus` instead of `SequencerTransactionStatus` ([#157]).
+- `JsonRpcClient::batch_requests` now surfaces the server's error when a batch is rejected as a whole (returned as a single JSON-RPC error object per the spec, e.g. exceeding the server's batch-size limit) instead of failing with a generic deserialization error ([#163]).
 
 ## [0.19.1] - 2026-05-18
 
@@ -95,3 +96,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#148]: https://github.com/software-mansion/starknet-rust/pull/148
 [#154]: https://github.com/software-mansion/starknet-rust/pull/154
 [#159]: https://github.com/software-mansion/starknet-rust/pull/159
+[#163]: https://github.com/software-mansion/starknet-rust/pull/163
